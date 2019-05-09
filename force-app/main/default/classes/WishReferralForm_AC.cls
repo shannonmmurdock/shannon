@@ -1,8 +1,8 @@
-/**********************************************************
+/*************************************************************************************************************
 Created by: Vennila Paramasivam
 Author : MST Solution
 Created Date : 04/08/2016
-Description : It will capture the lead from Referral form.
+Description : It will capture the lead from Referral form..
 ***********************************************************/
 
 global Class WishReferralForm_AC 
