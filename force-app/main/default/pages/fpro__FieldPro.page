@@ -1,0 +1,9 @@
+<!--
+
+-->
+
+<apex:page standardStylesheets="false" sidebar="false" applyBodyTag="false" docType="html-5.0" tabStyle="FieldPro__tab">
+    
+    <c:FieldProComp />
+    
+</apex:page>

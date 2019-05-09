@@ -1,0 +1,9 @@
+<!--
+
+-->
+
+<apex:page renderas="pdf">
+
+    <c:FieldProPDFComp />
+
+</apex:page>

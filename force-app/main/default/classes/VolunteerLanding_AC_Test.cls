@@ -1,0 +1,499 @@
+@isTest
+public class VolunteerLanding_AC_Test {
+    
+    // Capturing Dynamic content and Events. 
+    static testmethod void createDynamicContent()
+    {
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        con.BackGroundCheckUpdated__c = true;
+        update con;
+        OrientationandTrainingUtil.createAffiliation(con.id);
+        
+        User currUser;
+        System.RunAs(new User(Id = UserInfo.getUserId()))
+        {
+            currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        }
+        System.RunAs(currUser)
+        {
+            
+            Dynamic_Content__c  createProspectiveDynamicContent = OrientationandTrainingUtil.ChapterDynamicContent(acc.id);
+            HoldCurrentChapter__c currVal = new HoldCurrentChapter__c();
+            currVal.Name = currUser.id;
+            currVal.CurrentChapter__c = acc.Name;
+            insert currVal;
+            
+            
+            Constant_AC  constant = new Constant_Ac();    
+            Id EventRecTypeId = Schema.Sobjecttype.Non_Wish_Events__c.getRecordTypeInfosByName().get(constant.events).getRecordTypeId();
+            
+            List<Non_Wish_Events__c> eventList= new List<Non_Wish_Events__c>();
+            for(integer i =1 ; i<4;i++)
+            {
+                
+                Non_Wish_Events__c newEvent = new Non_Wish_Events__c();
+                newEvent.Event_Name__c = 'Send Off';
+                newEvent.Event_Date__c = System.Today()+5;
+                newEvent.Event_Text__c = 'Sending Wish Child';
+                newEvent.Priority__c = String.valueOf(i);
+                newEvent.chapter__c = acc.id;
+                newEvent.RecordTypeId =  EventRecTypeId;
+                eventList.add(newEvent);
+                
+            }
+            
+            Non_Wish_Events__c newEvent = new Non_Wish_Events__c();
+            newEvent.Event_Name__c = 'Send Off';
+            newEvent.Event_Date__c = System.Today()+5;
+            newEvent.Event_Text__c = 'Sending Wish Child';
+            //newEvent.Priority__c = String.valueOf(i);
+            newEvent.RecordTypeId =  EventRecTypeId;
+            newEvent.chapter__c = acc.id;
+            eventList.add(newEvent);
+            insert eventList;
+            
+            VolunteerLanding_AC controller = new VolunteerLanding_AC();
+            controller.getChapterList();
+            controller.getEvents();
+            controller.EnterchapterPage();
+            
+        }
+        
+    }
+    // Create custom setting value.
+    static testmethod void CreateHoldChapterValue()
+    {
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        con.BackGroundCheckUpdated__c = true;
+        update con;
+        OrientationandTrainingUtil.createAffiliation(con.id);
+        User currUser;
+        System.RunAs(new User(Id = UserInfo.getUserId()))
+        {
+            currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        }
+        System.RunAs(currUser)
+        {
+            Dynamic_Content__c  createDynamicContent = OrientationandTrainingUtil.createDynamicContent();
+            
+            VolunteerLanding_AC controller = new VolunteerLanding_AC();
+            controller.EnterchapterPage();
+        }
+    }
+    
+    // Display Promop upon login Training.
+    static testmethod void checkBGandCOI()
+    {
+        
+        Volunteer_Roles__c currVolRole;
+        Chapter_Role__c  currChapRole;
+        
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        OrientationandTrainingUtil.insertDocusignSetting();
+        Contact con1 = new Contact();
+        con1.Id = con.Id;
+        con1.Broadcast_Number__c = '1234';
+        con1.BackGroundCheckUpdated__c = true;
+        update con1;
+        //OrientationandTrainingUtil.createAffiliation(con.id);
+        
+        npe5__Affiliation__c neworgAffiliation = new npe5__Affiliation__c ();
+        neworgAffiliation.npe5__Contact__c  = con.Id;
+        neworgAffiliation.npe5__Organization__c = acc.Id;
+        neworgAffiliation.npe5__Primary__c = true;
+        neworgAffiliation.npe5__Status__c = 'Active';
+        neworgAffiliation.Constituent_code__c = 'Board Member';
+        insert neworgAffiliation;
+        
+        User currUser;
+        currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        //Background_check__c currBG = OrientationandTrainingUtil.createBackgroundCheck(currUser.contactId);
+        VolunteerLanding_AC controller;
+        Test.startTest();
+        System.RunAs(currUser)
+        {
+            Background_check__c currBGone = OrientationandTrainingUtil.createBackgroundCheck(currUser.contactId);
+            Background_check__c currBG = OrientationandTrainingUtil.createBackgroundCheck(currUser.contactId);
+            currBg.Current__c = true;
+            BGCRecordSharing(currUser.id,currBG.id);
+            update currBg;
+            Dynamic_Content__c  createProspectiveDynamicContent = OrientationandTrainingUtil.ChapterDynamicContent(acc.id);
+            HoldCurrentChapter__c currVal = new HoldCurrentChapter__c();
+            currVal.Name = currUser.id;
+            currVal.CurrentChapter__c = acc.Name;
+            insert currVal;            
+            
+            System.assert(currBg.id!=Null);
+            
+            Conflict_Of_Interest__c currCOI = OrientationandTrainingUtil.createCOI(con.id);
+            currCOI.Expiration_Date__c  = System.Today()+5;
+            COIRecordSharing(currUser.id,currCOI.id);
+            update currCOI;
+            
+            Broadcast__c currBroad = new Broadcast__c();
+            currBroad.Broadcast_Message__c = 'Test';
+            currBroad.Date__c = Date.Today() + 5;
+            currBroad.Chapter_Name__c = acc.id;
+            currBroad.Active__c = true;
+            insert currBroad;
+            
+            Role__c currRole = OrientationandTrainingUtil.createRole();
+            currChapRole = OrientationandTrainingUtil.createChapter(acc.id,currRole.id);
+            currVolRole = OrientationandTrainingUtil.createVolRole(con.id,currChapRole.id);
+            
+        }
+        
+        currVolRole.Status__c = 'Trained ';
+        update currVolRole;
+        
+        System.RunAs(currUser){    
+            
+            Orientation_Training__c  currOandT = OrientationandTrainingUtil.CreateVolunteerTrainingRecord();
+            currOandT.Prompt_upon_login__c = True;
+            update currOandT;
+            
+            Chapter_Role_O_T__c currChapOandT = OrientationandTrainingUtil.createChapterOandT(currChapRole.id,currOandT.id);
+            Class_Offering__c currOffering = OrientationandTrainingUtil.createClassOffering(currChapOandT.id);
+            
+            controller = new VolunteerLanding_AC();
+            //Test.StartTest();
+            controller.getChapterList();
+            controller.EnterchapterPage();
+            controller.COICheck();
+            controller.BackgroundCheck(false);
+            controller.volunteercon.BackGroundCheckUpdated__c = true;
+            //controller.broadCastCancel(false);
+            controller.register();
+            controller.featuredImage = 'testImage';
+            controller.featuredQuote = 'testQuote';
+            controller.welcomeMsg = 'testWelcome';
+            controller.headingTitle1 = 'testTitle1';
+            controller.headingText1 = 'testText';
+            controller.text1 = 'testText1';
+            controller.text2 = 'testText2';
+            controller.text3 = 'testText3';
+            controller.title1 = 'testTitile1';
+            controller.title2 = 'testTitle2';
+            controller.title3 = 'testTitle3';
+            controller.image1 = 'testImage1';
+            controller.image2 = 'testImage2';
+            controller.image3 = 'testImage3';
+            controller.confirmPopup = true;
+            
+            controller.confirmBackGroundCheck();
+            controller.cancel();
+            controller.cancelConflict();
+            controller.displayEmail();            
+            controller.hidePopup();
+            
+            controller.TrainingAckCancel();
+            Test.setMock(HttpCalloutMock.class, new Mock_ResponseGenerator()); 
+            controller.confirmBackGroundCheck();
+            controller.confirmConflict('VolunteerLanding_VF');
+            Test.StopTest();
+        }
+        controller.broadCastCancel();
+    }
+    // Background verfication and New BroadCast policy created.
+    static testmethod void checkBackgroundCheck()
+    {
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        con.Broadcast_Number__c = '1234';
+        con.BackGroundCheckUpdated__c = true;
+        update con;
+        
+        npe5__Affiliation__c neworgAffiliation = new npe5__Affiliation__c ();
+        neworgAffiliation.npe5__Contact__c  = con.Id;
+        neworgAffiliation.npe5__Organization__c = acc.Id;
+        neworgAffiliation.npe5__Primary__c = true;
+        neworgAffiliation.npe5__Status__c = 'Active';
+        neworgAffiliation.Constituent_code__c = 'Board Member';
+        insert neworgAffiliation;
+        
+        User currUser;
+        System.RunAs(new User(Id = UserInfo.getUserId()))
+        {
+            currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        }
+        VolunteerLanding_AC controller;
+        System.RunAs(currUser)
+        {
+            Dynamic_Content__c  createProspectiveDynamicContent = OrientationandTrainingUtil.ChapterDynamicContent(acc.id);
+            HoldCurrentChapter__c currVal = new HoldCurrentChapter__c();
+            currVal.Name = currUser.id;
+            currVal.CurrentChapter__c = acc.Name;
+            insert currVal;
+            
+            Background_check__c currBG = OrientationandTrainingUtil.createBackgroundCheck(con.id);
+            currBG.Date__c = Date.Today() + 5;
+            currBG.Date_Completed__c = Date.today() +5;
+            BGCRecordSharing(currUser.id,currBG.id);
+            update currBG;
+            
+            Broadcast__c currBroad = new Broadcast__c();
+            currBroad.Broadcast_Message__c = 'Test';
+            currBroad.Date__c = Date.Today() + 5;
+            currBroad.Active__c = true;
+            currBroad.Chapter_Name__c = acc.id;
+            insert currBroad;
+            
+            Role__c currRole = OrientationandTrainingUtil.createRole();
+            Chapter_Role__c  currChapRole = OrientationandTrainingUtil.createChapter(acc.id,currRole.id);
+            Volunteer_Roles__c currVolRole = OrientationandTrainingUtil.createVolRole(con.id,currChapRole.id);
+            
+            Orientation_Training__c  currOandT = OrientationandTrainingUtil.CreateVolunteerTrainingRecord();
+            currOandT.Prompt_upon_login__c = True;
+            update currOandT;
+            
+            Chapter_Role_O_T__c currChapOandT = OrientationandTrainingUtil.createChapterOandT(currChapRole.id,currOandT.id);
+            Class_Offering__c currOffering = OrientationandTrainingUtil.createClassOffering(currChapOandT.id);
+            
+            controller = new VolunteerLanding_AC();
+            controller.confirmPopup = true;
+            controller.hidePopup();
+            controller.getChapterList();
+            controller.EnterchapterPage();
+            controller.COICheck();
+        }
+        controller.broadCastCancel();
+    }
+    // Background check and COI is interms of going to expired in 30 days.
+    static testmethod void checkCOI()
+    {
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        con.Broadcast_Number__c = '1234';
+        con.BackGroundCheckUpdated__c = true;
+        update con;
+        OrientationandTrainingUtil.createAffiliation(con.id);
+        
+        User currUser;
+        System.RunAs(new User(Id = UserInfo.getUserId()))
+        {
+            currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        }
+        VolunteerLanding_AC controller;
+        System.RunAs(currUser)
+        {
+            Dynamic_Content__c  createProspectiveDynamicContent = OrientationandTrainingUtil.ChapterDynamicContent(acc.id);
+            HoldCurrentChapter__c currVal = new HoldCurrentChapter__c();
+            currVal.Name = currUser.id;
+            currVal.CurrentChapter__c = acc.Name;
+            insert currVal;
+            
+            Conflict_Of_Interest__c currCOI = OrientationandTrainingUtil.createCOI(con.id);
+            currCOI.Expiration_Date__c  = System.Today()+5;
+            currCOI.Current__c = true;
+            COIRecordSharing(currUser.id,currCOI.id);
+            update currCOI;
+            
+            Broadcast__c currBroad = new Broadcast__c();
+            currBroad.Broadcast_Message__c = 'Test';
+            currBroad.Date__c = Date.Today() + 5;
+            currBroad.Chapter_Name__c = acc.id;
+            currBroad.Active__c = true;
+            insert currBroad;
+            
+            Role__c currRole = OrientationandTrainingUtil.createRole();
+            Chapter_Role__c  currChapRole = OrientationandTrainingUtil.createChapter(acc.id,currRole.id);
+            Volunteer_Roles__c currVolRole = OrientationandTrainingUtil.createVolRole(con.id,currChapRole.id);
+            
+            Orientation_Training__c  currOandT = OrientationandTrainingUtil.CreateVolunteerTrainingRecord();
+            currOandT.Prompt_upon_login__c = True;
+            update currOandT;
+            
+            Chapter_Role_O_T__c currChapOandT = OrientationandTrainingUtil.createChapterOandT(currChapRole.id,currOandT.id);
+            Class_Offering__c currOffering = OrientationandTrainingUtil.createClassOffering(currChapOandT.id);
+            Volunteer_Orientation_Training__c  createVolOrientation = VolunteerLanding_AC_Test.createVolOrientation(currOandT.id,currOffering.id,con.id,'Registered');
+            
+            controller = new VolunteerLanding_AC();
+            controller.getChapterList();
+            controller.EnterchapterPage();
+            controller.COICheck();
+        }
+        controller.broadCastCancel();
+    }
+    
+    //Confict Of Interest Expired.
+    static testmethod void checkCOIisExpired()
+    {
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        con.BackGroundCheckUpdated__c = true;
+        update con;
+        
+        npe5__Affiliation__c neworgAffiliation = new npe5__Affiliation__c ();
+        neworgAffiliation.npe5__Contact__c  = con.Id;
+        neworgAffiliation.npe5__Organization__c = acc.Id;
+        neworgAffiliation.npe5__Primary__c = true;
+        neworgAffiliation.npe5__Status__c = 'Active';
+        neworgAffiliation.Constituent_code__c = 'Board Member';
+        insert neworgAffiliation;
+        
+        User currUser;
+        System.RunAs(new User(Id = UserInfo.getUserId()))
+        {
+            currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        }
+        VolunteerLanding_AC controller;
+        System.RunAs(currUser)
+        {
+            Dynamic_Content__c  createProspectiveDynamicContent = OrientationandTrainingUtil.ChapterDynamicContent(acc.id);
+            HoldCurrentChapter__c currVal = new HoldCurrentChapter__c();
+            currVal.Name = currUser.id;
+            currVal.CurrentChapter__c = acc.Name;
+            insert currVal;
+            
+            Conflict_Of_Interest__c currCOI = OrientationandTrainingUtil.createCOI(con.id);
+            currCOI.Expiration_Date__c  = System.Today()-5;
+            currCOI.Current__c = true;
+            COIRecordSharing(currUser.id,currCOI.id);
+            update currCOI;
+            
+            controller = new VolunteerLanding_AC();
+            controller.getChapterList();
+            controller.EnterchapterPage();
+            controller.COICheck();
+        }
+    }
+    
+    // Backgroundcheck expired.
+    static testmethod void checkBGisExpired()
+    {
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        con.BackGroundCheckUpdated__c = true;
+        update con;
+        
+        npe5__Affiliation__c neworgAffiliation = new npe5__Affiliation__c ();
+        neworgAffiliation.npe5__Contact__c  = con.Id;
+        neworgAffiliation.npe5__Organization__c = acc.Id;
+        neworgAffiliation.npe5__Primary__c = true;
+        neworgAffiliation.npe5__Status__c = 'Active';
+        neworgAffiliation.Constituent_code__c = 'Board Member';
+        insert neworgAffiliation;
+        
+        User currUser;
+        System.RunAs(new User(Id = UserInfo.getUserId()))
+        {
+            currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        }
+        VolunteerLanding_AC controller;
+        System.RunAs(currUser)
+        {
+            Dynamic_Content__c  createProspectiveDynamicContent = OrientationandTrainingUtil.ChapterDynamicContent(acc.id);
+            HoldCurrentChapter__c currVal = new HoldCurrentChapter__c();
+            currVal.Name = currUser.id;
+            currVal.CurrentChapter__c = acc.Name;
+            insert currVal;
+            
+            Background_check__c currBG = OrientationandTrainingUtil.createBackgroundCheck(con.id);
+            currBG.Date__c = Date.Today()-5;
+            BGCRecordSharing(currUser.id,currBG.id);
+            update currBG;
+            
+            controller = new VolunteerLanding_AC();
+            controller.isBGRoleExpOOC = TRUE;
+            controller.getChapterList();
+            controller.EnterchapterPage();
+            controller.COICheck();
+        }
+        
+    }
+    
+    // Registered the Background Verfication.But Verifiation pending status.
+    private static testmethod void checkBGStatus()
+    {
+        Account acc = OrientationandTrainingUtil.createVolunteerAccount();
+        Contact con = OrientationandTrainingUtil.createVolunteerContact(acc.id);
+        con.BackGroundCheckUpdated__c = true;
+        update con;
+        //OrientationandTrainingUtil.createAffiliation(con.id);
+        
+        npe5__Affiliation__c neworgAffiliation = new npe5__Affiliation__c ();
+        neworgAffiliation.npe5__Contact__c  = con.Id;
+        neworgAffiliation.npe5__Organization__c = acc.Id;
+        neworgAffiliation.npe5__Primary__c = true;
+        neworgAffiliation.npe5__Status__c = 'Active';
+        neworgAffiliation.Constituent_code__c = 'Board Member';
+        insert neworgAffiliation;
+        
+        User currUser;
+        System.RunAs(new User(Id = UserInfo.getUserId()))
+        {
+            currUser = OrientationandTrainingUtil.createActiveVolunteerUser(con.id);
+        }
+        VolunteerLanding_AC controller;
+        System.RunAs(currUser)
+        {
+            Dynamic_Content__c  createProspectiveDynamicContent = OrientationandTrainingUtil.ChapterDynamicContent(acc.id);
+            HoldCurrentChapter__c currVal = new HoldCurrentChapter__c();
+            currVal.Name = currUser.id;
+            currVal.CurrentChapter__c = acc.Name;
+            insert currVal;
+            Background_check__c currBG = OrientationandTrainingUtil.createBackgroundCheck(con.id);
+            Background_check__c currBG1 = OrientationandTrainingUtil.createBackgroundCheck(con.id);
+            Background_check__Share BGSharing = BGCRecordSharing(currUser.id,currBG.id);
+            
+            currBG.Date__c = Date.Today().addYears(3);
+            BGCRecordSharing(currUser.id,currBG.id);
+            update currBG;
+            
+            controller = new VolunteerLanding_AC();
+            controller.getChapterList();
+            controller.EnterchapterPage();
+            controller.COICheck();
+        }
+    }
+    
+    
+    // Creating Volunteer Traing based on the input parameter.
+    private static Volunteer_Orientation_Training__c createVolOrientation(Id OrienationId, Id ClassOfferingId,Id volunteer,string status)
+    {
+        Volunteer_Orientation_Training__c createNewVol = new Volunteer_Orientation_Training__c();
+        createNewVol.class_offering__c = ClassOfferingId;
+        createNewVol.Hidden_O_T_Id__c= OrienationId;
+        createNewVol.Registered_Date__c = Date.Today();
+        createNewVol.Volunteer__c = volunteer;
+        createNewVol.Volunteer_Attendance__c = status;
+        createNewVol.Type__c = 'Training';
+        insert createNewVol;
+        return createNewVol;
+    }  
+    
+    
+    private Static Background_check__Share BGCRecordSharing(id userId, id recordId)
+    {
+        Background_check__Share currSharing = new Background_check__Share();
+        User currUser = [SELECT id from User WHERE Profile.Name ='System Administrator' and isActive=True limit 1];
+        System.RunAs(currUser)
+        {
+            currSharing.ParentId = recordId;
+            currSharing.UserOrGroupId = userId;
+            currSharing.AccessLevel = 'Edit';
+            currSharing.RowCause = Schema.Background_check__Share.RowCause.Manual;
+            insert currSharing;
+        }
+        return currSharing;
+    }
+    
+    private Static Conflict_Of_Interest__Share COIRecordSharing(id userId, id recordId)
+    {
+        Conflict_Of_Interest__Share currSharing = new Conflict_Of_Interest__Share();
+        User currUser = [SELECT id from User WHERE Profile.Name ='System Administrator' and isActive=True limit 1];
+        System.RunAs(currUser)
+        {
+            
+            currSharing.ParentId = recordId;
+            currSharing.UserOrGroupId = userId;
+            currSharing.AccessLevel = 'Edit';
+            currSharing.RowCause = Schema.Conflict_Of_Interest__Share.RowCause.Manual;
+            insert currSharing;
+        }
+        return currSharing;
+    }
+}

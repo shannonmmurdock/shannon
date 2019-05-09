@@ -1,0 +1,27 @@
+<apex:page standardController="Case">
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"/>
+    <apex:includeScript value="/soap/ajax/18.0/connection.js"/>
+    <apex:includeScript value="/soap/ajax/18.0/apex.js"/>
+    <apex:outputPanel rendered="{!AND(Case.Wish_Assist__c != True,Case.Status == 'Ready to Assign',Case.Hidden_bypass_Validation__c != Null,IF(Contains(Case.Hidden_bypass_Validation__c,'Ready to Interview') || Contains(Case.Hidden_bypass_Validation__c,'Wish Determined'),True,False),Case.Case_Member_Count__c < 2 )}">
+        <script>
+        $( document ).ready(function() {
+            var r = confirm("You do not have two volunteers assigned to this wish. Please select \"OK\" to continue changing the status to Ready to Interview without two volunteers assigned. Select \"Cancel\" to return to the case to assign the volunteers.");
+            if (r == true) {
+                var id = sforce.apex.execute("Case_ReadytoInterview_Popup_AC","UpdateCaseStatus",{caseId:'{!case.Id}',Status:"Ready to Interview"});
+                // alert(id);
+                var message = id;
+                if(message == "Please Enter the value for Wish Type"){
+                    alert('Please Enter the value for Wish Type');
+                }
+                var delay = 3500;      
+                window.top.location='/{!case.id}';  
+            } 
+            else{
+                //alert('else part');
+                var id = sforce.apex.execute("Case_ReadytoInterview_Popup_AC","UpdateCaseStatus",{caseId:'{!case.Id}',Status:"Ready to Assign"});
+                window.top.location='/{!case.id}';
+            }
+        }); 
+        </script>
+    </apex:outputpanel>
+</apex:page>

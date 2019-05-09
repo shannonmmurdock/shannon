@@ -1,0 +1,337 @@
+<apex:page renderAs="pdf" standardController="Case" extensions="SignNow_AC" standardStylesheets="false" showHeader="false" sidebar="false"  applyBodyTag="false" applyHtmlTag="false">
+
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
+        <style type="text/css" media="print"> 
+            *{font-family: 'Lato', sans-serif; font-size:14px;}
+            .newfont{color:white;}
+            .oldfont{color:black;}
+            @page {
+            @top-center {
+            content: element(header);
+            }
+            @bottom-left {
+            content: element(footer);
+            }
+            }
+            div.header {
+            padding: 10px;
+            position: running(header);
+            text-align: center;
+            }
+            div.footer {
+            padding: 5px;
+            position: running(footer);
+            }
+            .pagenumber:before {
+            content: counter(page);
+            }
+            .pagecount:after {
+            content: counter(pages);
+            }                        
+        </style>
+    </head> 
+
+<apex:form > 
+         
+     <apex:image url="{!URLFOR($Resource.MakeAWishAmericaDesign,'images/maw-logo.png')}" style="width:22%;" styleClass="header-logo"/>
+      <div class="row header-padding">
+            <div style="font-size:20px; margin-bottom:15px; text-transform:uppercase; text-align:center; width:100%;">Wish Family Form</div>
+      </div>
+    
+      <br/>
+      <hr style="border-width: 2px;margin-left: auto;display: block;margin-bottom: 0.5em;"></hr>
+    <!--Header-->     
+     <div style="clear:both"></div>
+      <div style="margin-top:0px;">
+          <div style="width:20%;float:left;margin:0 10px 0 0" type="text"><strong>Wish Child's Name:</strong></div>
+          <div style="width:24%;float:left;margin:0 10px 0 0" type="text"><div class="{!IF(currWishChild.FirstName__c==null,'newfont','oldfont')}" style="border-bottom:1px solid #000 !important; border:none;">{!if(currWishChild.FirstName__c==null,'-',currWishChild.FirstName__c)}</div><div style="font-size:14px;font-style:italic;">First</div></div>
+          <div style="width:24%;float:left;margin:0 10px 0 0" type="text"><div class="{!IF(currWishChild.Middle_Name__c==null,'newfont','oldfont')}" style="border-bottom:1px solid #000 !important; border:none;">{!if(currWishChild.Middle_Name__c==null,'-',currWishChild.Middle_Name__c)}</div><div style="font-size:14px;font-style:italic;">Middle</div></div>
+          <div style="width:24%;float:left;margin:0 10px 0 0" type="text"><div class="{!IF(currWishChild.LastName__c==null,'newfont','oldfont')}" style="border-bottom:1px solid #000 !important; border:none;">{!if(currWishChild.LastName__c==null,'-',currWishChild.LastName__c)}</div><div style="font-size:14px;font-style:italic;">Last</div></div>
+      </div>
+   
+     <apex:repeat value="{!displayWishFamilyList}" var="wishFamilContact">
+      
+         <div style="margin-top:50px;">
+             <div style="width:24%;float:left;margin:0 10px 0 0" type="text"><strong>Parent/Legal Guardian:</strong></div>
+             <div style="width:24%;float:left;margin:0 10px 0 0" type="text"><div class="{!IF(wishFamilContact.FirstName__c ==null,'newfont','oldfont')}" style="border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.FirstName__c==null,'-',wishFamilContact.FirstName__c)}</div><div style="font-size:14px;font-style:italic;">First</div></div>
+             <div style="width:24%;float:left;margin:0 10px 0 0" type="text"><div class="{!IF(wishFamilContact.Middle_Name__c ==null,'newfont','oldfont')}" style="border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.Middle_Name__c  ==null,'-',wishFamilContact.Middle_Name__c )}</div><div style="font-size:14px;font-style:italic;">Middle</div></div>
+             <div style="width:20%;float:left;margin:0 10px 0 0" type="text"><div class="{!IF(wishFamilContact.LastName__c ==null,'newfont','oldfont')}" style="border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.LastName__c ==null,'-',wishFamilContact.LastName__c)}</div><div style="font-size:14px;font-style:italic;">Last</div></div>
+         </div>   
+    
+         
+         <div style="clear:both"></div>
+         <div style="margin-top:12px;">
+             <div style="clear:both"></div>
+             <div style="margin-top:5px;">                
+                 <div style="width:20% !important; float:left; font-weight:normal;">Relationship: </div>
+                 <div class="{!IF(wishFamilContact.Emergency_Relationship__c ==null,'newfont','oldfont')}" style="width:35%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;margin:0 10px 0 0;border:none;">{!if(wishFamilContact.Emergency_Relationship__c ==null,'-',wishFamilContact.Emergency_Relationship__c)}</div>
+                 <div style="width:5% !important; float:left; font-weight:normal;">Age: </div>
+                 <div class="{!IF(wishFamilContact.Age__c ==null,'newfont','oldfont')}" style="width:15%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;margin:0 10px 0 0;border:none;">{!if(wishFamilContact.Age__c ==null,'-',wishFamilContact.Age__c)}</div>
+                 <div style="width:5% !important; float:left; font-weight:normal;">DOB: </div>
+                 <div class="{!IF(wishFamilContact.BirthDate__c == null,'newfont','oldfont')}" style="width:15%; float:left;border-bottom:1px solid #000 !important; margin:0 10px 0 0; border:none;"><apex:outputText value="{0,date,MM'/'dd'/'yyyy}" ><apex:param value="{!if(wishFamilContact.BirthDate__c ==null,NOW(),wishFamilContact.BirthDate__c)}" /></apex:outputText></div>  
+             </div>             
+             <div style="clear:both"></div>
+             <div style="margin-top:5px;">
+                 <div style="width:20% !important; float:left;margin:0 10px 0 0; font-weight:normal;">Address:</div> 
+                 <div class="{!IF(wishFamilContact.Hidden_Same_as_Family__c == null,'newfont','oldfont')}" style="width:75%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;border:none;">{!if(wishFamilContact.Hidden_Same_as_Family__c ==null,'-',wishFamilContact.Hidden_Same_as_Family__c)}</div>
+             </div>               
+             <div style="clear:both"></div>
+             <div style="margin-top:5px;">
+                 <div style="width:20% !important; float:left; font-weight:normal;">Home Telephone :</div>
+                 <div class="{!IF(wishFamilContact.Home_Phone__c ==null,'newfont','oldfont')}" style="width:27%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;padding-left:1.6em !important;border:none;">{!if(wishFamilContact.Home_Phone__c ==null,'-',wishFamilContact.Home_Phone__c)}</div>
+                 <div style="width:20% !important; float:left; font-weight:normal;">Work Telephone : </div>
+                 <div class="{!IF(wishFamilContact.TelePhone__c ==null,'newfont','oldfont')}" style="width:27%; float:left;border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.TelePhone__c ==null,'-',wishFamilContact.TelePhone__c)}</div>   
+             </div>
+             <div style="clear:both"></div>
+             <div style="margin-top:5px;">
+                 <div style="width:20% !important; float:left; font-weight:normal;">Mobile Telephone :</div>
+                 <div class="{!IF(wishFamilContact.mobilePhone__c ==null,'newfont','oldfont')}" style="width:35%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;padding-left:1.6em !important;border:none;">{!if(wishFamilContact.mobilePhone__c ==null,'-',wishFamilContact.mobilePhone__c)}</div>
+                 <div style="width:8% !important; float:left; font-weight:normal;">Email : </div>
+                 <div class="{!IF(wishFamilContact.Email__c ==null,'newfont','oldfont')}" style="width:30%; float:left;border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.Email__c ==null,'-',wishFamilContact.Email__c)}</div>   
+             </div>  
+             
+             
+   <!--
+          <div style="width:23% !important; float:left; font-weight:normal;">Relationship :</div>
+          <div class="{!IF(wishFamilContact.Emergency_Relationship__c ==null,'newfont','oldfont')}" style="width:15%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;margin:0 10px 0 0;border:none;">{!if(wishFamilContact.Emergency_Relationship__c ==null,'-',wishFamilContact.Emergency_Relationship__c)}</div>-->
+          <!-- <div style="width:8% !important; float:left; font-weight:normal;">AGE : </div>
+          <div style="width:10%; float:left;border-bottom:1px solid #000 !important; border:none;">dummy</div>    -->
+           <!--  <div style="width:8% !important; float:left; font-weight:normal;">DOB : </div>
+          <div class="{!IF(wishFamilContact.BirthDate__c == null,'newfont','oldfont')}" style="width:32%; float:left;border-bottom:1px solid #000 !important; margin:0 10px 0 0; border:none;"><apex:outputText value="{0,date,MM'/'dd'/'yyyy}" ><apex:param value="{!if(wishFamilContact.BirthDate__c ==null,NOW(),wishFamilContact.BirthDate__c)}" /></apex:outputText></div>  
+          </div>-->
+          
+        <!--  <div style="clear:both"></div>
+         <div style="margin-top:5px;">
+          <div style="width:23% !important; float:left; font-weight:normal;">T-Shirt Size: :</div>
+          <div class="{!IF(wishFamilContact.T_Shirt_Size__c  ==null,'newfont','oldfont')}" style="width:15%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;padding-left:1.6em !important;border:none;">{!if(wishFamilContact.T_Shirt_Size__c ==null,'-',wishFamilContact.T_Shirt_Size__c )}</div>
+         <div style="width:25% !important; float:left; font-weight:normal;">Residing with Wish Child : </div> 
+         <div class="{!IF(wishFamilContact.Residing_With_Wish_Child__c ==null,'newfont','oldfont')}" style="width:15%; float:left;border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.Residing_With_Wish_Child__c ==null,'-',wishFamilContact.Residing_With_Wish_Child__c)}</div>  
+        <div style="width:20% !important; float:left;margin:0 10px 0 0; font-weight:normal;">Participant:</div> 
+         <div class="{!IF(wishFamilContact.Hidden_Same_as_Family__c == null,'newfont','oldfont')}" style="width:65%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;border:none;">{!if(wishFamilContact.Hidden_Same_as_Family__c ==null,'-',wishFamilContact.Hidden_Same_as_Family__c)}</div>  
+       -->
+         </div>
+      
+      
+         
+          
+     <!--
+     <div style="clear:both"></div>
+        <div style="margin-top:5px;">
+          <div style="width:20% !important; float:left; font-weight:normal;">Street:</div>
+          <div class="{!IF(wishFamilContact.Street__c ==null,'newfont','oldfont')}" style="width:15%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;padding-left:1.6em !important;border:none;">{!if(wishFamilContact.Street__c  ==null,'-',wishFamilContact.Street__c )}</div>
+          <div style="width:8% !important; float:left; font-weight:normal;"> City: </div>
+          <div class="{!IF(wishFamilContact.city__c  ==null,'newfont','oldfont')}" style="width:30%; float:left;border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.city__c  ==null,'-',wishFamilContact.city__c  )}</div>   
+         </div> 
+     
+     <div style="clear:both"></div>
+        <div style="margin-top:5px;">
+          <div style="width:20% !important; float:left; font-weight:normal;">State:</div>
+          <div class="{!IF(wishFamilContact.State__c  ==null,'newfont','oldfont')}" style="width:15%; float:left;border-bottom:1px solid #000 !important;margin-top:0% !important;padding-left:1.6em !important;border:none;">{!if(wishFamilContact.State__c  ==null,'-',wishFamilContact.State__c )}</div>
+          <div style="width:8% !important; float:left; font-weight:normal;">Postal Code: </div>
+          <div class="{!IF(wishFamilContact.Zip_code__c  ==null,'newfont','oldfont')}" style="width:30%; float:left;border-bottom:1px solid #000 !important; border:none;">{!if(wishFamilContact.Zip_code__c ==null,'-',wishFamilContact.Zip_code__c )}</div>   
+         </div> -->
+   </apex:repeat>
+           <br/><br/>   
+       <div style="clear:both"></div>
+          <div style="margin:10px 0 0 0;"><strong>Prior Wish:</strong> Has your child ever had a wish granted or been considered by Make-A-Wish® or any other
+                wish-granting organization? <span style="border-bottom:1px solid #000; width:15%;">{!currWishChild.Already_wish_granted_by_MAW_Other_Org__c}</span> *If yes, please indicate the organization's name, the wish,
+                and the date it was or will be granted.<br/><br/>
+                 <div style="width:100%;border-bottom:1px solid #000 !important; font-style:underline; border:none;">{!currWishChild.If_yes_Enter_Org_Name_Wish_Date_it_wa__c}</div>
+                <span style="border-bottom:1px solid #000; width:100%;"></span>
+          </div>
+          <p style="text-align:center;font-style:italic;">A wish with another organization may not be pursued prior to completion of a Make-A-Wish experience.</p>
+            <div><strong>Social Media:</strong>Make-A-Wish would like to stay connected through social media. If interested, please
+provide contact information for each site on which you are active.<br/><br/>
+                <span style="border-bottom:1px solid #000; width:100%;"></span>
+                <div style="width:100%;border-bottom:1px solid #000 !important; font-style:underline; border:none;">{!currWishChild.Social_Media_Link__c}</div>
+          </div>
+    <div style="clear:both;"/>
+    <div class="footer">       
+       © Make-A-Wish Foundation of America 2014
+    </div>
+          <div style="page-break-before:always;"/>
+          <!--Header-->
+     <apex:image url="{!URLFOR($Resource.MakeAWishAmericaDesign,'images/maw-logo.png')}" style="width:22%;" styleClass="header-logo"/>
+          <div class="row header-padding">
+            <div style="font-size:20px; margin-bottom:15px; text-transform:uppercase; text-align:center; width:100%;">Wish Family Form</div>
+          </div>
+          <br/>
+      <hr style="border-width: 2px;margin-left: auto;display: block;margin-bottom: 0.5em;"></hr>
+    <!--Header-->     
+     
+          <div style="border:1px solid #000;height:auto;margin:10px 0 0 0;font-size:20px; padding:15px;">
+              <p style="text-align:center; padding:0;margin:0">Required Signatures</p>
+              <p style="padding:0;margin:0"><b>I understand and agree:</b></p>
+              <ul>
+                  <li style="list-style-type:decimal; margin:0 0 10px 0;">That no promises or assurances whatsoever have been made to me by any
+representative of Make-A-Wish regarding the requested wish;</li>
+<li style="list-style-type:decimal; margin:0 0 10px 0;">That the granting of any wish and the participation of any person in the wish is
+contingent upon approval by Make-A-Wish and the child’s physician, as well as full compliance with all conditions, qualifications, and restrictions designated by
+Make-A-Wish;</li>
+
+<li style="list-style-type:decimal; margin:0 0 10px 0;">That all individuals with parental or custodial rights for the child must approve
+the wish before it is granted and must sign all necessary documents; and</li>
+<li style="list-style-type:decimal; margin:0 0 10px 0;">That the receipt of a wish may impact the eligibility for public assistance and/or
+benefits.</li>
+              </ul>
+             <p style="padding:0;margin:5px 0;"><b>I promise that the information provided by me is true and complete to the best of my knowledge.</b></p>
+         <div style="margin-top:10px;">
+             <br/>
+             <table style="min-width:720px;hight:130px;border=5px solid red;style:width:100%;">
+                        
+                        <tr>
+                           
+                            <td style="width:37%;;border: 0px solid black;valign:bottom;height:40px">Parent/Legal Guardian Signature: <span style="height: 25px; !important;color:white;padding-left:1em !important">~s1</span></td>                            
+                            
+                            <td style="width:23%;border: 0px solid black;valign:center;height:40px"> Date     :  <span style="height: 25px;color:white;padding-left:1em !important">~date1</span></td>
+                            
+                        </tr>
+                        <tr>
+                        <td></td>
+                        <td></td>
+                        </tr>
+               </table>
+             <br/><br/>
+        </div>
+  </div>
+  <div style="clear:both;"/>
+  <div class="footer">       
+        © Make-A-Wish Foundation of America 1999, 2004, 2013 
+  </div>  
+ <div style="page-break-before:always;"/>          
+   <!--Header-->
+   <apex:image url="{!URLFOR($Resource.MakeAWishAmericaDesign,'images/maw-logo.png')}" style="width:22%;" styleClass="header-logo"/>
+      <div class="row header-padding">
+            <div style="font-size:18px; margin-top:15px; text-transform:uppercase; text-align:center; width:100%;">LIABILITY RELEASE </div>
+            <div style="font-size:18px; text-transform:uppercase; text-align:center; width:100%;">AND AUTHORIZATION RE:MEDICAL </div>
+            <div style="font-size:18px; margin-bottom:15px; text-transform:uppercase; text-align:center; width:100%;text-decoration: underline;">INFORMATION AND PUBLICITY</div>
+      </div>
+    <!--Header-->    
+            <body>
+               <div class="paragraph" style="text-indent: 50px;"><p>The undersigned have requested that the Make-A-Wish Foundation    ,as well as the Make-A-Wish Foundation of America, 
+                               all licensed chapters and affiliates thereof, and their respective volunteers, officers, directors, employees and
+                  agents (collectively, "Make-A-Wish"), fulfill a wish (the “Wish”) for
+                  <span style="text-decoration: underline;">{!currCase.Contact.Name}</span> ("Wish Child"). The Wish Child and the following
+                 people (collectively, “Participants”) have requested that Make-A-Wish allow them to
+                 participate in the Wish: (indicate names of potential wish participants)</p>
+                 
+                 <p>
+                     <span style="text-decoration: underline;">{!comboParticipantName } </span>
+                   <p style="text-indent: 50px;">Participants, and the parents or legal guardians of the Wish Child and any
+                   minor Participants, are signing this Liability Release and Authorization Re: Medical
+                   Information and Publicity (“Release and Authorization”) to bind themselves, their
+                   minor children, their heirs, successors, assigns and estates to the conditions
+                   described herein.</p>
+                   
+                 </p>
+               </div>
+               <div class="paragraph">
+                <center><span class="text-imp"><u>Liability Release</u></span></center>
+               <p style="text-indent: 50px;">          
+                    Participants understand that involvement in the Wish may entail risk of
+                    injury or harm to the Participants and agree that this risk is fully assumed by the
+                    Participants. In addition, and in consideration of Make-A-Wish considering the
+                    Wish and, if it so determines, granting the Wish, the Participants hereby release
+                    and agree to hold Make-A-Wish harmless for, from and against any and all liability,
+                    damages and claims (“Claims”) of any kind, known and unknown, which may be
+                    connected with, result from, or arise out of the consideration, preparation,
+                    fulfillment or participation in the Wish. This includes, but is not limited to, Claims
+                    involving economic loss, illness or medical condition, accidental injury or death.
+                 </p>
+            </div>
+            <div class="paragraph">
+                    <center><span class="text-imp"><u>Authorization re: Medical Information</u></span></center>
+                    <p style="text-indent: 50px;">The parents or legal guardians of Wish Child: (1) grant Make-A-Wish
+                    permission to obtain all medical information about Wish Child that Make-A-Wish
+                    deems necessary for consideration or fulfillment of the Wish; (2) authorize all
+                    healthcare providers, including Wish Child’s primary physician, to provide Make-AWish
+                    with all such information regarding Wish Child; and (3) agree to sign any
+                    additional medical authorization forms that may be required by Wish Child’s
+                    healthcare provider(s).</p><br/>
+
+                    <center><span class="text-imp"><u>Publicity Authorization</u></span></center>
+                    <p style="text-indent: 50px;">Participants understand and agree that fulfillment of the Wish may result in
+                    publicity, whether or not Make-A-Wish actively takes steps to publicize the Wish.
+                    However, to the extent Make-A-Wish has control over the matter, Wish Child’s
+                    parents or guardians are asked to choose between the following two alternatives.
+                    [Note: By signing this Release and Authorization, all other Participants (or their
+                    parents/guardians if under the age of 18) agree to be bound by the “publicity option”
+                    chosen by Wish Child’s parents or legal guardians.]
+                    </p>
+
+            </div>
+
+
+            <div class="paragraph">
+            
+                    <p><span style="height: 15px; !important;margin-left: -2%;margin-right: -7%;color:white;padding-left:1em !important" Styleclass="tab-form-element main-radio-tab-input">~FirstRadio</span><span style="text-transform: uppercase; font-size: 14px; font-weight: 600; color:#000000; font-family: 'futura-pt', 'Century Gothic', Arial, sans-serif;">OPTION 1 [Publicity O.K.]:</span> Participants authorize Make-A-Wish to
+                    publicize the Wish and to use Participants’ names, likenesses and other information
+                    about Participants and the Wish (including Wish Child’s medical condition), whether
+                    embodied in photographs, videotapes, recordings or any other format (collectively,
+                    “Information”), for purposes of promotion, publication, commercial advertising, or
+                    any other purpose whatsoever, now or at any time in the future. Participants
+                    understand and agree that Make-A-Wish may use any such Information:</p>
+             </div>
+              <div style="page-break-before:always;"/>
+             <apex:image url="{!URLFOR($Resource.MakeAWishAmericaDesign,'images/maw-logo.png')}" style="width:22%;" styleClass="header-logo"/>
+             <div class="paragraph">
+             <p>(1) in all
+                    manner and media whatsoever, whether now known or hereafter invented, including
+                    electronic and print media and the Internet; (2) with or without Participants’ names;
+                    (3) without the payment of royalties or other compensation to anyone; and (4)
+                    without the need to notify them or to seek further approval before doing so.</p></div> 
+              
+                <div class="paragraph">
+                    <p style="width:50%;" >Initials of Wish Child’s parents/guardians<br/><b>if <u>authorizing</u> publicity: </b></p>
+                    <div style="width:55%;float:right;margin:0 10px 0 0" type="text"><div style="border-bottom:1px solid #000 !important; border:none;"><span style="height: 15px; !important;color:white;padding-left:1em !important;margin-top:20px !important;text-align:center !important;">~123abcinitial</span></div></div>
+                </div>
+             <div class="paragraph" style="margin-top:5%">
+                    <p><span style="height: 15px; !important;margin-left: -2%;margin-right: -9%;color:white;padding-left:1em !important" Styleclass="tab-form-element main-radio-tab-input">~secondRadio</span><span style="text-transform: uppercase; font-size: 14px; font-weight: 600; color:#000000; font-family: 'futura-pt', 'Century Gothic', Arial, sans-serif;">OPTION 2 [Prefer no publicity]:</span> Participants request that information
+                    about their involvement in the Wish not be actively publicized by Make-A-Wish to
+                    the electronic or print news media, posted on the Internet, or used in Make-A-Wish
+                    “collateral” such as newsletters, brochures, annual reports, etc. However, each
+                    Participant understands and agrees: (1) that information regarding the Wish and
+                    Participants will necessarily be discussed with and disclosed to those involved in the
+                    wish process; (2) that Make-A-Wish may publicly describe and promote the Wish
+                    generally, without specifically identifying Participants; and (3) that even if Make-AWish
+                    does not actively publicize the Wish, the general public and media may obtain
+                    information concerning Participants’ involvement in the Wish from other sources.</p>
+             </div>
+
+             <div class="paragraph">
+                 <p style="width:50%;" >Initials of Wish Child’s parents/guardians<br/><b>if prefer Wish <u>not</u> be actively publicized :</b></p>
+                 <div style="width:55%;float:right;margin:0 10px 0 0" type="text"><div style="border-bottom:1px solid #000 !important; border:none;"><span style="height: 15px; !important;color:white;padding-left:1em !important;margin-top:20% !important;text-align:center !important;">~initial2</span></div></div>
+             </div>
+        <br/>
+            <div class="paragraph">
+                       <p> Participants acknowledge reading and understanding this Release and
+                    Authorization. For the Wish Child and any minor Participants, the signature of
+                    their parent or guardian is on behalf of the parent/guardian and on behalf of the
+                    minor. Participants agree that this Release and Authorization fully and accurately
+                    expresses their understanding and has not been modified orally or in writing.</p>
+            </div>
+            <div class="paragraph">
+                <br/>                
+              
+              <table style="min-width:720px;hight:130px;border=5px solid red;style:width:100%;">
+                        
+                        <tr>
+                           
+                            <td style="width:60%;;border: 0px solid black;valign:bottom;height:40px">Parent/Legal Guardian Signature: <span style="height: 25px; !important;color:white;padding-left:1em !important">~s1</span></td>                            
+                            
+                            <td style="width:20%;border: 0px solid black;valign:center;height:40px"> Date     :  <span style="height: 25px;color:white;padding-left:1em !important">~date1</span></td>
+                            
+                        </tr>
+                        <tr>
+                        <td></td>
+                        <td></td>
+                        </tr>
+               </table>
+              
+            </div> 
+             </body>                 
+    
+  </apex:form>
+
+</apex:page>

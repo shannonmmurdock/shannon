@@ -1,0 +1,74 @@
+<apex:page action="{!createBulkPreviewsConfController}" controller="cg.CreateBulkPreviewsController">
+
+<apex:stylesheet value="{!URLFOR($Resource.sources, 'font-awesome/css/font-awesome.min.css') }" />
+<apex:form rendered="{!NOT(isAdmin)}">
+    <apex:pageBlock >
+        <apex:PageMessage summary="Content cannot be displayed: You do not have sufficient privileges to access the Update S-Drive Objects Page. Please contact your administrator for further information." severity="warning" strength="3"/>
+        <apex:pageBlockButtons >
+            <apex:commandButton action="{!goToHomePage}" value="Go to Home Page"/>
+        </apex:pageBlockButtons>
+    </apex:pageBlock>
+</apex:form>
+<apex:form id="theform" rendered="{!isAdmin}">
+
+<c:WaitingComponent />
+
+<apex:outputPanel layout="block" id="updateSettings" >
+ <apex:pageBlock rendered="{!allObjectsLoaded}"> 
+    <apex:pageMessages />
+    <apex:pageBlockButtons >
+        <apex:commandButton value="Generate P&T" action="{!updateObjects}" onclick="if(!confirm('There will be conversion charges if you create bulk previews and thumbnails. For more, please visit https://www.sdriveapp.com/pricing')){return false};"  />
+        <apex:commandButton value="Cancel" action="{!cancel}"/>
+        <apex:commandButton action="{!refresh}"  value=" Refresh Job Status " rerender="updateSettings" />
+
+    </apex:pageBlockButtons>
+    
+     <apex:pageBlockSection columns="1">
+         <apex:facet name="header">
+             <span style="color:black">Preview Enabled Objects Related S-Drive </span>
+         </apex:facet>
+         <apex:pageMessage summary="To create Preview & Thumbnail of existing files of an object, select Create checkbox next to an object and click on Generate P&T button." severity="info" strength="1" />
+         <apex:pageBlockTable value="{!objectSettings}" var="rec">
+             <apex:column headerValue="Object" style="font-size : 12px;font-weight:bold">
+                 <apex:outputLabel value="{!rec.objectLabel}"></apex:outputLabel>
+             </apex:column>
+             
+             <apex:column headerValue="Object File">
+                 <apex:selectList id="objectSelectList" size="1"  value="{!rec.fileObjectName}" >
+                     <apex:selectOptions value="{!rec.objectList}"/>
+                 </apex:selectList>
+             </apex:column>
+             
+             <apex:column headerValue="Create">
+                 <apex:inputCheckbox value="{!rec.enabled}"/>
+             </apex:column>
+         </apex:pageBlockTable>
+         
+         
+     </apex:pageBlockSection>
+    
+     <apex:outputLabel style="color:red"> <i class="fa fa-info-circle" aria-hidden="true"></i> Additional S3 storage will be consumed by the previews and thumbnails.</apex:outputLabel>
+    </apex:pageBlock>
+
+ 
+</apex:outputPanel> 
+
+ <apex:actionFunction action="{!loadConfiguration}" name="loadConfiguration" rerender="updateSettings,jsBlock">
+ </apex:actionFunction>
+
+</apex:form> 
+
+<apex:outputPanel id="jsBlock" layout="block">
+    <apex:outputPanel rendered="{!NOT(allObjectsLoaded)}">
+        <script type="text/javascript">
+            lockScreenAndUpdateMessage(true,'{!JSENCODE(loadingMessage)}');
+            loadConfiguration();
+        </script>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!allObjectsLoaded}">
+        <script type="text/javascript">
+              lockScreenAndUpdateMessage(false,'{!JSENCODE(loadingMessage)}');
+        </script>
+    </apex:outputPanel> 
+</apex:outputPanel>
+</apex:page>

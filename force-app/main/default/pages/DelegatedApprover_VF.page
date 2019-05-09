@@ -1,0 +1,252 @@
+<apex:page controller="DelegatedApproverController_AC" readOnly="true" sidebar="false" showHeader="false" id="page" standardStylesheets="false" applyBodyTag="false" docType="html-5.0" cache="false" lightningStylesheets="true">
+    <title>Approval Process</title>
+    <apex:slds />
+    <apex:stylesheet value="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <apex:includeScript value="{!URLFOR($Resource.wff_assets, 'wff_assets/js/jquery-2.2.4.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.prospective_assets, 'web/css/lib/jquery.dataTables.min.css')}"/>
+    <apex:stylesheet value="https://cdn.datatables.net/rowgroup/1.0.2/css/rowGroup.dataTables.min.css"/>
+    <apex:includeScript value="{!URLFOR($Resource.prospective_assets, 'web/js/jquery.dataTables.min.js')}"/>
+    <apex:includeScript value="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"/>
+    <apex:includeScript value="https://cdn.datatables.net/rowgroup/1.0.2/js/dataTables.rowGroup.min.js"/>
+    <apex:includeScript value="https://code.jquery.com/ui/1.12.1/jquery-ui.js"/>
+    <apex:stylesheet value="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+    <style>
+        th {background-color:#f9f9f9 !important; border-top:1px solid black}
+        .slds-scope{border:none; padding: 30px; font-size:16px;}
+        hr{margin-bottom: 10px !important;}
+        .black{border:2px solid red}
+        .cc {visibility: hidden}
+        .group td {visibility: show !important}
+        .slds-scope body, .slds-scope:not(html) {font-size:11px !important}
+        .bd, .slds-form-element__label {font-size:11px !important}
+        #myTable {width:100% !important}
+        #myTable tr td:last-child {word-break:break-all !important; min-width:80px !important}
+    </style>
+    
+    <body class="slds-scope slds-box">
+        <div class="row">
+            
+            <nav aria-label="..." class="col-sm-2 col-md-2">
+                <ul class="pager">
+                    <li class="previous"><a href="#" class="slds-button slds-button_brand bd" onClick="goBack();" style="margin-top: 10px;"><span aria-hidden="true">&larr;</span> Go Back</a></li>
+                </ul>
+            </nav>
+        </div> 
+        <br/>
+        <br/>
+        <form class="slds-form--inline">
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="name">From</label>
+                <div class="slds-form-element__control">
+                    <input id="from" class="slds-input" type="text" />
+                </div>
+            </div>
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="email">To</label>
+                <div class="slds-form-element__control">
+                    <input id="to" class="slds-input" type="text" />
+                </div>
+            </div>
+            <div class="slds-form-element">
+                <button type="button" class="slds-button slds-button--brand" onClick="GetDateFilterValue();" >Go</button>
+            </div>
+        </form>
+        
+        <br/>
+        <br/>
+        
+        <apex:outputPanel >
+            <div class="row">
+               
+                <div class="col-sm-12 col-md-12">
+                    <Center><h3 class="slds-text-heading_large">Approval Process Report</h3></Center>
+                    
+                </div>
+            </div>
+            <hr/>
+            <div class="slds-text-heading_medium"><label for="processName"><b>Apply Filters:</b></label>
+            </div><div id="MyFilter" class="slds-grid slds-gutters"></div>
+            <hr/>
+            <div id='tableContent'> 
+                <table id="myTable" class="stripe">  
+                    <thead>
+                        <th class="select-filter">Process Name</th>  
+                        <th class="select-filter">Chapter Name</th>
+                        <th>Record Name</th>
+                        <th>Wish Child</th>
+                        <th class="select-filter">Status</th>
+                        <th>Created By</th>
+                        <th>Submitted By</th>
+                        <th class="select-filter">Approved By</th> 
+                        <th class="select-filter">Assigned To</th>         
+                        <th>Submitted Date</th>       
+                        <th>Completed Date</th>       
+                        <th style="word-break:break-all;">Object Type</th>
+                    </thead>
+                </table>
+            </div>
+        </apex:outputPanel>
+    </body>
+    <script>
+    var oTable;
+    $(document).ready(function() {
+        $( function() {
+            var dateFormat = "mm/dd/yy",
+                from = $( "#from" )
+            .datepicker({
+                defaultDate: "+1w",
+                changeMonth: true,
+                numberOfMonths: 1
+            })
+            .on( "change", function() {
+                to.datepicker( "option", "minDate", getDate( this ) );
+                var maxTo = getDate(this);
+                maxTo.setMonth(maxTo.getMonth()+3);
+                
+                to.datepicker( "option", "maxDate", maxTo);
+            }),
+                to = $( "#to" ).datepicker({
+                    defaultDate: "+1w",
+                    changeMonth: true,
+                    numberOfMonths: 1
+                })
+            .on( "change", function() {
+                from.datepicker( "option", "maxDate", getDate( this ) );
+            });
+            
+            function getDate( element ) {
+                var date;
+                try {
+                    date = $.datepicker.parseDate( dateFormat, element.value );
+                } catch( error ) {
+                    date = null;
+                }
+                
+                return date;
+            }
+        } );
+        var toDate = new Date();
+        toDate =   toDate.getFullYear() + '-' + (toDate.getMonth() + 1) +'-' + toDate.getDate();
+        var x = 3;
+        var CurrentDate = new Date(toDate);
+        CurrentDate.setMonth(CurrentDate.getMonth()-3);
+        var fromDate = CurrentDate.getFullYear() + '-' + (CurrentDate.getMonth() + 1) +'-' + CurrentDate.getDate();
+        retriveData(fromDate,toDate);
+    });
+    
+    function retriveData(fromDate, toDate) {
+        
+        var data = [];
+        var table;
+        
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.DelegatedApproverController_AC.getAppList}',fromDate,toDate,
+            function(result, event){
+                if(event.type == 'exception') {
+                    alert(event.message);
+                } else {
+                    var json = result.replace(/(&quot\;)/g,"\"");
+                    var obj = jQuery.parseJSON(json);
+                    
+                    for (var i = 0; i < obj.length; i++) {
+                        data.push( [ obj[i].processName, obj[i].chapterName, obj[i].recordName, obj[i].wishChild, obj[i].status, obj[i].createdBy, obj[i].submittedBy, obj[i].approvedBy, obj[i].assignedTo, obj[i].submittedDate, obj[i].completedDate, obj[i].objectType]);
+                    }
+                    
+                    oTable =  $('#myTable').dataTable( {
+                        data:           data,
+                        processing: true,
+                        "columnDefs": [{
+                            "defaultContent": "-",
+                            "targets": "_all"
+                        }],
+                        order: [[0, 'asc']],
+                        rowGroup: {
+                            dataSrc: 0
+                        },
+                        initComplete: function () {
+                            $('#MyFilter').empty();
+                            this.api().columns('.select-filter').every( function () {
+                                var column = this;
+                                var header = column.header().innerHTML;
+                                var isFirstOption = true;
+                                console.log(header);
+                                var selectBlock = $('<div class="slds-col">'+
+                                                    '<div class="slds-form-element"><label class="slds-form-element__label" for="combobox-unique-id-2">'+ header + 
+                                                    '</label><div class="slds-form-element__control"><div class="slds-combobox_container slds-size_small" id="'+header.split(' ')[0]+'">'+                                    
+                                                    '</div></div></div></div>');                                
+                                $('#MyFilter').append(selectBlock);                                
+                                var select = $('<select class="slds-input slds-combobox__input slds-combobox__input-value"><option value="">--Select--</option></select>')
+                                .appendTo( $('#'+header.split(' ')[0]))
+                                .on( 'change', function () {
+                                    var val = $.fn.dataTable.util.escapeRegex(
+                                        $(this).val()
+                                    );
+                                    
+                                    column.search( val ? '^'+val+'$' : '', true, false )
+                                    .draw();
+                                });
+                                
+                                column.data().unique().sort().each( function ( d, j ) {
+                                    if(d !== null) {
+                                        if(header == 'Chapter Name' && isFirstOption){
+                                            select.append( '<option value="-">Null</option>' )
+                                            isFirstOption = false;
+                                        }
+                                        select.append( '<option value="'+d+'">'+d+'</option>' )
+                                    }
+                                } );
+                            } );
+                        }
+                    });
+                } 
+            }
+        );
+        $('.group label').css('display','block');
+        $('input[type="search"]').keyup(function(){displayHidden()});  
+        
+    }
+    function ss() {
+        $('.sorting_1').each(function() {
+            alert($(this).text());
+        });
+    }ss();
+    
+    $(document).delegate('.paginate_button', 'click', function() {
+        displayHidden();
+    });
+    $('#myTable thead').on( 'click', 'th', function () {      
+        displayHidden();
+    });
+    function displayHidden() {
+        $('.group label').css('display','block');
+    }
+    function goBack() {
+        window.history.back();
+    }
+    function FilterData(retriveData) {
+        
+    }
+    
+    function GetDateFilterValue() {
+        var toDate = document.getElementById('from').value;
+        var fromDate = document.getElementById('to').value;
+        if(toDate.length > 0 && fromDate.length > 0) {
+            var day = toDate.split("/")[2];
+            var month = toDate.split("/")[0];
+            var year = toDate.split("/")[1];
+            toDate =day + '-' + month +'-' + year;
+            var fromDate = document.getElementById('to').value;
+            var day1 = fromDate.split("/")[2];
+            var month1 = fromDate.split("/")[0];
+            var year1 = fromDate.split("/")[1];
+            fromDate =day1 + '-' + month1 +'-' + year1;
+           
+                $('#myTable').dataTable().fnDestroy();
+                retriveData(toDate,fromDate);
+            
+        } else {
+            alert('Please enter date value');
+        }
+    }
+    </script>
+</apex:page>

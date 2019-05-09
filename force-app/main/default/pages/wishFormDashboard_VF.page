@@ -1,0 +1,256 @@
+<!-- ******************************************************************************************************************************
+Description : This page is used to display the wish form status
+*********************************************************************************************************************************** -->
+<apex:page applyBodyTag="false" sidebar="false" showHeader="false" docType="html-5.0" standardStylesheets="false" title="Make-A-Wish | Wish Form Tracker" cache="false">
+    <head> 
+        <title>Make-A-Wish | Wish Form Tracker</title> 
+    </head> 
+    <script>
+    function resizeIframe(obj) {
+        obj.style.height = 0;
+        obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+    }
+    </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous" />
+    <link rel="stylesheet" type="text/css" href="{!URLFOR($Resource.prospective_assets, 'web/css/core.css')}" media="all" />
+    <style>
+        form label.form-check-label {display:block; cursor: pointer; font-family:"arial",helvetica, sans-serif; margin-bottom:0.4rem; padding-left:2rem; text-indent:-1.8rem; text-transform:none}
+        form label.form-check-label input {margin-right:1rem}
+        
+        .frmtrack-dashboard { width:60%; margin:0px auto!important}
+        form{border:0px;}
+        .frmtrack-dashboard form label.form-check-label{margin-bottom:0.4rem}
+        .frmtrack-dashboard .m-title{
+            font-family: "Lato", Arial, sans-serif;
+            font-weight: 900;
+            font-size: 1rem;
+            color: #4c4c4c;
+            text-transform: uppercase;
+            padding-left: 3px;
+        }
+        .frmstatus-warn{
+            background: #ffb75d;
+            text-align: center;
+            color: #fff;
+            padding: 4px;
+            text-transform: uppercase;
+            width: 100%;
+            position: relative;
+            font-size: 0.8rem;
+            width: 62%;
+            height:30px;
+            line-height: 22px;
+        }
+        .frmstatus-success{
+            background: #04844b !important;
+        }
+        .frmtrack-dashboard table tr th{
+            background: #0057B8;
+            min-height: 3rem;
+            border-radius: 2px;
+            margin-top: 2.8rem;
+            position: relative;
+            text-transform: none;
+            font-size: .7rem;
+            color:#fff;
+        }
+        .frmtrack-dashboard table tr td{
+            min-height: 3rem;
+            font-size: .7rem;
+            color: #75787B;
+            font-weight: 700;
+            vertical-align:middle;
+        }
+        .frmtrack-dashboard table tr:nth-child(even){
+            background-color: #eee;
+        }
+        .frmtrack-dashboard .btn-outer{
+            border: 0px;
+            padding: 0.4rem;
+            border-radius: 2px;
+            font-size: 0.9rem;
+        }
+        .frmtrack-dashboard .modal-title {
+            font-family: "Lato", Arial, sans-serif;
+            font-weight: 900;
+            font-size: 1rem;
+            color: #4c4c4c;
+            text-transform: uppercase;
+            padding-left: 0;
+        }
+        .vcp h1.modal-title{
+            padding-bottom: 0px !important;
+        }
+        .vcp .modal-footer{
+            border-top: none;
+        }
+        .m-c-t{
+            margin-top:5px;
+        }
+
+        .c-t-r{
+            margin-top:2%;
+            margin-right: 2%;
+        }
+       
+        @media screen and (max-width: 48em) {
+            .frmtrack-dashboard { width:100%}
+        }
+        /* notification */
+        .notification {position:relative; z-index: 1000}
+        .notification div {position:relative; background:#00C069; border-radius:.3rem; padding:0.6rem; color:#fff; text-align:center; margin-bottom:1.3rem;}
+        .notification div.error {background:#d9534f; color:#fff;}
+        .notification h6 {margin:0; text-transform:none !important}
+        .notification p {padding:0; margin:0; font-size:.8rem; font-family:arial,helvetica;}
+        
+        
+        /* Static notification */
+        .notification-static {position:fixed; top:5rem; left:50%; z-index: 1000}
+        .notification-static div {position:relative; left:-50%; background:#00C069; border-radius:.5rem; padding:1rem; color:#fff; text-align:center;}
+        .notification-static h6 {margin:0; text-transform:none !important}
+        .notification-static p {padding:0; margin:0; font-size:.8rem; font-family:arial,helvetica;}
+    </style>
+    <body class="vcp">
+        <span>
+            <header role="main-header" class="container">
+                <div class="row">
+                    <nav class="col-xs-3 col-xs-offset-9 pre-nav" role="top_menubar"><a href="javascript:openPopup('#returnToWish');"><span aria-label="Return To Wish" class="sr-only">Make-A-Wish®</span>Return To Wish</a></nav>
+                </div>
+                <div class="row">
+                    <apex:outputLink styleClass="center-block maw-logo" value=""><span class="sr-only" aria-label="Make-A-Wish">Make-A-Wish&reg;</span></apex:outputLink>
+                 
+                </div>
+                <nav class="navbar navbar-dark sub-nav">
+                    <div class="collapse navbar-toggleable-sm" id="exCollapsingNavbar">
+                    </div>
+                </nav>
+            </header>
+        </span>
+        <apex:includeLightning />
+        <div id="lightning" class="frmtrack-dashboard" />
+        <script>
+        var recordId = '{!$CurrentPage.parameters.Id}';
+        var myUserContext = "{!$User.UITheme}";
+        $Lightning.use("c:wishFormDashboard", function() {
+            $Lightning.createComponent("c:wishChildFamily",
+                                       {// Set Lightning Component Attributes Property before creating Lightning Component In Visualforce page 
+                                           recordId : '{!$CurrentPage.parameters.Id}',
+                                           textColor : "Red",
+                                           currentUserName : '{!$User.FirstName} {!$User.LastName}' },
+                                       "lightning",
+                                       function(component) {
+                                           $A.eventService.addHandler({
+                                               event: 'force:navigateToSObject',
+                                               handler: function(event) {
+                                                   
+                                                   if (myUserContext == 'Theme4t' || myUserContext == 'Theme4d' || myUserContext == 'Theme4u') {
+                                                       // The Visualforce page is in S1 or Lightning Experience
+                                                       sforce.one.navigateToSObject(event.getParams().recordId);
+                                                   } else if (myUserContext == 'Theme3') {
+                                                       // The Visualforce page is  running in Classic
+                                                       window.parent.location = '/' + event.getParams().recordId;
+                                                   } else {
+                                                       console.log("Unsupported theme");   
+                                                   }
+                                               }
+                                           });
+                                       });
+        });
+        function openPopup(modalId){
+           $(modalId).modal('show');
+            return false;
+        }
+        function closePopup(modalId){
+           $(modalId).modal('hide');
+            return false;
+        }
+
+        function redirectToWish(){
+            window.location.href = '/'+ recordId;
+        }
+        </script>
+        <!-- Start Return To Wish Modal -->
+            <div class="modal fade" id="returnToWish" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="bg-chk" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <h1 class="modal-title text-md-center">RETURN TO WISH</h1>
+                            </div>
+                            <div class="modal-body text-md-center">
+                                <span class="text-muted">
+                                      Are you sure you want to exit? </span>
+                                
+                            </div>
+                            <div class="modal-footer text-md-center">
+                                <button type="button" class="btn btn-primary" onclick="redirectToWish();">Yes</button>
+                                <button type="button" class="btn btn-primary" onclick="closePopup('#returnToWish');">No</button>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+        <!-- End Return To Wish Modal -->
+        <span>
+            <footer class="container-fluid">
+                <div class="container">
+                    <section class="row">
+                        <div class="col-md-4 col-md-push-4">
+                            <a class=" btn-md cnt" href="https://wish.org/wishes/stay-in-touch">
+                                <div class="col-xs-8 rich-text">
+                                    <span class="title">Stay In Touch!</span>
+                                    <span class="detail">Sign up to receive email from Make-A-Wish.</span>
+                                </div>
+                            </a>
+                        </div>
+                    </section>
+                    <section class="row legal">
+                        <span class="col-sm-1 col-md-2 col-lg-1"><a class="bbb" href="http://wish.org/about-us/making-a-difference/managing-funds/better-business-bureau"><span class="sr-only">Better Business Bureau</span></a></span>
+                        <div class="col-sm-11 col-md-10 col-lg-11">
+                            <p>&copy;2006-2016 Make-A-Wish Foundation of America<br/>
+                                Make-A-Wish Foundation of America is an Arizona nonprofit corporation exempt from federal income tax under Section 501(c)(3) of the Internal Revenue Code.<br/>
+                                <a href="https://wish.org/content/terms-and-policy">Privacy Policy &amp; Terms</a> | <a href="https://wish.org/content/faq">FAQ</a></p>
+                        </div>
+                    </section>
+                </div>
+            </footer>
+        </span>
+        <script>window.jQuery || document.write('<script src="{!URLFOR($Resource.prospective_assets, 'web/js/jquery.min.js')}"><\/script>')</script>
+        <!-- bootstrap -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.3/js/bootstrap.min.js" crossorigin="anonymous"></script>
+        <!-- bootstrap css fallback (appends to head) -->
+            <script>$.each(document.styleSheets, function(i,sheet){ if(sheet.href=='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css') {var rules = sheet.rules ? sheet.rules : sheet.cssRules; if (rules.length == 0) { $('<link rel="stylesheet" type="text/css" href="css/lib/bootstrap.min.css" />').appendTo('head');} } });</script>
+        <script>
+        (function ($, root, undefined) {
+            // prepend meta/link tags before VF head output
+            $('head').prepend('<meta http-equiv="x-ua-compatible" content="ie=edge" /><meta http-equiv="content-type" content="text/html; charset=utf-8" /><meta name="HandheldFriendly" content="True" /><meta name="MobileOptimized" content="480" /><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" /><meta http-equiv="cleartype" content="on" />');
+            $('style').before('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous" /><link rel="stylesheet" type="text/css" href="{!URLFOR($Resource.prospective_assets, 'web/css/core.css')}" media="all">');
+        })(jQuery);
+        </script>
+        <script>
+        function showSuccessMsg(key){
+            //alert(key);
+            $('#info-msg').empty();
+            if(key == 'success'){
+                $('#info-msg').append('<div class="notification"><div><h6>Your form has been successfully sent.</h6></div></div>').fadeIn();
+                $('.notification').delay(4000).fadeOut();
+                setInterval(function() {
+                    $('.notification').remove();
+                }, 4500);
+            }else if(key){
+                $('#info-msg').append('<div class="notification"><div class="error"><h6>'+key+'</h6></div></div>').fadeIn();
+            }
+        }
+        function showSuccessMsgInWindow(msg) {   
+            $('#bg-chk1').modal('hide');
+            $('body').append('<div class="notification-static"><div><h6>'+ msg +'</h6></div></div>').fadeIn();
+            $('.notification-static').delay(4000).fadeOut();
+            setInterval(function() {
+                $('.notification-static').remove();
+            }, 4500);            
+        }
+        </script>
+    </body>
+</apex:page>
