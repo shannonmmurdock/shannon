@@ -11,6 +11,10 @@ global class MigrationController {
         return null;
     }
     @RemoteAction
+    global static List<VisualAntidote.MigrationController.DestinationFormDTO> getListOfDestinationForms(VisualAntidote.MigrationController.MigrationAccessDTO pMigrationAccessDTO) {
+        return null;
+    }
+    @RemoteAction
     global static List<VisualAntidote.MigrationController.OrgAvailableDTO> getListOfOrgsToMigrate() {
         return null;
     }
@@ -22,6 +26,8 @@ global class MigrationController {
     global static VisualAntidote.MigrationController.MigrationAccessDTO validateLogin(VisualAntidote.MigrationController.SalesforceAuthorizationDTO pSalesforceAuthorization) {
         return null;
     }
+global class DestinationFormDTO {
+}
 global class FormMigrationDTO {
 }
 global class MigrationAccessDTO {

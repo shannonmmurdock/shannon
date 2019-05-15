@@ -66,7 +66,7 @@
         margin-right: 16px;
         text-align: center;
         }
-        .migrate-disabled, .vabutton2.migrate-disabled:hover{
+        .migrate-disabled, .vabutton3.migrate-disabled:hover{
             background-color: #ffffff !important;
             border: solid 1px #cecece !important;
             color:#cecece !important;
@@ -570,6 +570,80 @@
         color: #052942;   
         }
         /*new css ends*/
+
+
+        /*TODO: move to seprated file Migrate details css */
+        .form-migrate-wrapper-inner {
+            padding: 23px 41px 23px 41px;
+            background-color: #BED4DF;
+        }
+        .fs-migrateDetails-record {
+            font-style: normal;
+            font-stretch: normal;
+            line-height: normal;
+            letter-spacing: normal;
+            text-align: left;
+            color: #616161;
+            font-size: 14px;
+            padding: 14px 17px 17px 17px;
+        }
+        .fs-migrateDetails-record>p {
+            font-weight: 700;
+            margin-top: 0px;
+            margin-bottom: 7px;
+        }
+        .fs-migrateDetails-record>span {
+            padding-right: 57px
+        }
+        .fs-migrateDetails-box {
+
+            width: 853px;
+            border-radius: 4px;
+            background-color: #e5ecef;
+        }
+        .fs-migrateDetails-buttons-box {
+            margin: 14px -10px 0px 44px;
+            text-align: right;
+        }
+        .center-text {
+            text-align: center;
+        }
+        .migrated-button-action {
+            padding: 6px 10px 6px 10px;
+            margin-right: 13px;
+        }
+        .icon-attention-triangle--orange {
+            background-position: center;
+            background-image: url("{!URLFOR($Resource.fs_assets,'images/iconimages/icon_attention.png')}");
+            background-repeat: no-repeat;
+            width: 24px;
+            height: 16px;
+            display: inline-block;
+        }
+        .warning-message {
+            margin-top: 17px;
+        }
+        .font-13px{
+            font-size: 13px
+        }
+        .migration-draft{
+            float: left;
+            display: inline-block;
+            font-family: 'Open Sans';
+            background-color: #fff;
+            border-radius: 15px;
+            text-decoration: none;
+            padding: 4px 14px 4px 15px;
+            -moz-box-shadow: 0 0 1px 1px rgba(221,221,221,.3);
+            -webkit-box-shadow: 0 0 1px 1px rgba(221,221,221,.3);
+            box-shadow: 0 0 1px 1px rgba(221,221,221,.3);
+            border: 3px solid #e6ecef;
+            font-size: 13px;
+            font-style: italic;
+            text-align: left;
+            color: #616161;
+        }
+        /* Migrate details css End */
     </style>
     <apex:outputPanel id="trialExpiryCompPanel">
         <c:TrialExpiryComponent id="trialExpCp"  ffFreemium="{!isFreemium}" />
@@ -874,6 +948,7 @@
             expandDiv=true;
         }
         hideAllSubmissionPanels();
+        hideAllMigratePanels();
         resetPublishOptionDrawer('');
         if(expandDiv){
             $(elemSource).addClass('active');
@@ -885,6 +960,71 @@
             
         }
     }
+
+    function expandMigrate(elemSource){
+        var expandDiv=false;
+        if(!$(elemSource).hasClass('active')){
+            expandDiv=true;
+        }
+
+        // hide all panel in page 
+        hideAllSubmissionPanels();
+        resetPublishOptionDrawer('');
+        hideAllMigratePanels();
+        if(expandDiv){
+            $(elemSource).addClass('active');
+            var MigrateDetailPanel=$(elemSource).parents('.form-information-wrapper-outer').find('.form-migrate-wrapper-expanded');
+            $(MigrateDetailPanel).slideDown();
+            // TODO: move to form validation
+            migrateDetailsPanelActions(MigrateDetailPanel);
+        }
+    }
+
+    function migrateDetailsPanelActions(elemSource){
+        // create Action buttons
+        var wrapper = elemSource[0].querySelector('.form-migrate-wrapper-inner');
+        var button_box = wrapper.querySelector('.fs-migrateDetails-buttons-box');
+        button_box.innerHTML='';
+        var approvedBy = wrapper.getAttribute('data-approvedBy');
+        var migratedUrl = wrapper.getAttribute('data-url');
+        var formID = wrapper.getAttribute('data-elemid');
+        var formObjUnpublished = wrapper.getAttribute('data-formObjUnpublished');
+        var isHosted = wrapper.getAttribute('data-isHosted');
+        if(approvedBy != ''){
+            // Show migrate button
+            var link = document.createElement('a');
+            
+            if(formObjUnpublished === 'true'){
+                link.setAttribute('class','vabutton3 migrated-button-action migrate-disabled');
+                link.setAttribute('title','The form needs to be published before migration can be done.');
+            }else{
+                link.setAttribute('class','vabutton3 migrated-button-action');
+                link.setAttribute('href',migratedUrl);
+            }
+            link.innerHTML = 'Migrate Form';
+            button_box.appendChild(link); 
+
+        }else if(approvedBy == '' && isHosted != 'false' && formObjUnpublished === 'true'){
+            // Show Approve and cancel button 
+
+            // TODO: uncomment FF-4254 and repalce isHosted with a field inside form_migration update or new
+            var btnCancel = document.createElement('a');
+            btnCancel.setAttribute('class','vabutton2 migrated-button-action');
+            btnCancel.setAttribute('href','#');
+            btnCancel.setAttribute('onClick','DiscardDraft("'+formID+'")');
+            btnCancel.innerHTML = 'Cancel Migration';
+            button_box.appendChild(btnCancel); 
+
+            // var btnApprove = document.createElement('button');
+            // btnApprove.setAttribute('class','vabutton3 migrated-button-action');
+            // btnApprove.setAttribute('onClick','');//TODO: add function name to execut Approve & Publish
+            // btnApprove.innerHTML = 'Approve & Publish';
+            // button_box.appendChild(btnApprove); 
+
+        }
+
+    }
+
     function populateSubmissionStatuses(elemParent,statusNotificationList){
         var ulHTML='<ul class="fs-statuses"><li class="status-msg-li st-all"><span class="status-msg"></span><span class="status-text"></span></li><li class="status-msg-li st-successful"><span class="status-msg"></span><span class="status-text"></span></li><li class="status-msg-li st-pending"><span class="status-msg"></span><span class="status-text"></span></li> <li class="status-msg-li st-failed"><span class="status-msg"></span><span class="status-text"></span></li></ul>';
         var divElem=$('<div/>',{'class':'fs-statuses-box'});
@@ -1092,6 +1232,17 @@
             
         });
     }
+
+    function hideAllMigratePanels()
+    {
+        $('.form-outer-container').each(function(index,elem){
+            
+            $(elem).find('.form-migrate-wrapper-expanded').slideUp();
+            $(elem).find('.form-migrate-wrapper-expanded').parent().find('.btnmigrate').removeClass('active')
+            
+        });
+    }
+
     function hideAllPublishPanels()
     { 
         $('.form-outer-container').each(function(index,elem){
@@ -1104,6 +1255,7 @@
         });
         
     }
+
     function resetNavigationlinks(){
         resetFastFormsHREFLinks('.mainDiv',SFPrefixForLinks);
         remoteGetFailedSubmissionsCountJS();
@@ -1111,6 +1263,7 @@
     function hidePublishPanels(linkelem)
     {    
         hideAllSubmissionPanels();
+        hideAllMigratePanels();
         $(linkelem).parent().toggleClass('active');
         
         console.log('linkelem '+linkelem);
@@ -1133,7 +1286,7 @@
             }
         });
     }
-    
+
     function showNotification(elemid, textmsg)
     {
         $('#' + elemid).show();
@@ -1711,8 +1864,11 @@
                 <apex:outputPanel id="mainrepeaterpanel"  layout="block">
                     <apex:repeat id="mainrepeater" value="{!listFormObjects}" var="formObj">
                         <apex:outputPanel layout="block" styleClass="form-outer-container" id="itemFormWrapper">
-                            
-                            
+                            <apex:variable var="formObjUnpublished" value="{!formObj.SFForm.VisualAntidote__Draft_Status__c == 'Unpublished'}" />
+                            <apex:variable var="formApprovedBy" value="{!formObj.migrationDetails.VisualAntidote__ApprovedBy__c}" />
+                            <apex:variable var="isFormMigration" value="{!formObj.migrationDetails != null}" />
+                            <apex:variable var="isHosted" value="{!formObj.SFForm.VisualAntidote__Hosted_Form_ID__c != ''}" />
+
                             <div    class="form-information-wrapper-outer " id="form-{!formObj.SFForm.id}">
                                 <div class="form-information-wrapper grey-left-border10" style="display:table"> 
                                     <div class="form-item-row">
@@ -1770,19 +1926,30 @@
                                                 <span class="community-badge">{!IF(formObj.SFForm.VisualAntidote__Context_Type__c == 'Admin','Formstack Admin','Logged-In User')}</span>
                                             </apex:outputPanel>
                                         </div>
-                                        
+
                                         <div class="form-editor-title-box">
                                             <div class="form-actions publish-actions">
                                                 <div class="action-icons-left">
-                                                    <span  style="float:left;display:{!IF(formObj.SFForm.Draft_Status__c!='' && formObj.SFForm.Draft_Status__c=='Unpublished' ,'inline-block','none')}" class="button-draft draft-event draft-mode draft-status-{!formObj.SFForm.Draft_Status__c} blue-tooltip"    >
-                                                        <span class="blue-tooltip-text -mt40 -ml40">This form has changes that have not been published yet</span>
-                                                        <span class="draft-text">Draft</span>
-                                                        
-                                                        <a class="delete-icon" href="#"    onClick="DiscardDraft('{!formObj.SFForm.id}')"></a>              
-                                                        
-                                                        
-                                                        
-                                                    </span>
+                                                    <apex:outputPanel id="draft-Panel" layout="block" rendered="{!isFormMigration == false}" >
+                                                        <span  style="float:left;display:{!IF(formObj.SFForm.Draft_Status__c!='' && formObj.SFForm.Draft_Status__c=='Unpublished' ,'inline-block','none')}" class="button-draft draft-event draft-mode draft-status-{!formObj.SFForm.Draft_Status__c} blue-tooltip">
+                                                            <span class="blue-tooltip-text -mt40 -ml40">This form has changes that have not been published yet</span>
+                                                            <span class="draft-text">Draft</span>
+                                                            
+                                                            <a class="delete-icon" href="#"    onClick="DiscardDraft('{!formObj.SFForm.id}')"></a>              
+                                                        </span>
+                                                    </apex:outputPanel>
+                                                    <apex:outputPanel id="Migration-draft-Panel" layout="block" rendered="{!isFormMigration}" >
+                                                                <span  style="float:left;display:{!IF(formObjUnpublished && formApprovedBy =='','inline-block','none')}" class="migration-draft draft-mode draft-status-{!formObj.SFForm.Draft_Status__c}">
+                                                                    <span class="draft-text">Migration Draft</span>
+                                                                </span>
+
+                                                                <span  style="float:left;display:{!IF(formObjUnpublished && formApprovedBy !='' ,'inline-block','none')}" class="button-draft draft-event draft-mode draft-status-{!formObj.SFForm.Draft_Status__c} blue-tooltip">
+                                                                        <span class="blue-tooltip-text -mt40 -ml40">This form has changes that have not been published yet</span>
+                                                                        <span class="draft-text">Draft</span>
+                                                                        
+                                                                        <a class="delete-icon" href="#"    onClick="DiscardDraft('{!formObj.SFForm.id}')"></a>              
+                                                                </span>
+                                                    </apex:outputPanel>
                                                     <div class="button-draft draft-event draft-saving italic-text blue-tooltip" id="draftSaveState" style="display:none"    >
                                                         
                                                         <span class="draft-text">Draft Saving</span>
@@ -1792,13 +1959,13 @@
                                                 <div class="action-icons-right">
                                                     <apex:outputText rendered="{!if(formObj.IsValid,true,false)}">
                                                         <a class="action-icon edit-icon blue-tooltip vfns-link" href="{!$Site.BaseUrl}/apex/FormEditor?id={!formObj.SFForm.id}" onclick="trackEditTemplate('{!formObj.SFForm.id}');"      ><span class="blue-tooltip-text -ml18">Edit</span></a>
-                                                        <a class="action-icon duplicate-icon blue-tooltip" href="javascript:void(0);"  onClick="duplicateTemplateCall('{!formObj.SFForm.id}')"     ><span class="blue-tooltip-text -ml30">Duplicate</span></a>
+                                                        <a class="{!if(formApprovedBy !='' || isFormMigration == false,'action-icon','')} duplicate-icon blue-tooltip" href="javascript:void(0);"  onClick="duplicateTemplateCall('{!formObj.SFForm.id}')"     ><span class="blue-tooltip-text -ml30">Duplicate</span></a>
                                                         <a class="action-icon preview-icon blue-tooltip vfns-link" href="{!$Site.BaseUrl}/apex/FormdraftPreview?id={!formObj.SFForm.id}" target="_blank"      ><span class="blue-tooltip-text -ml25">Preview</span></a>
                                                         <a class="action-icon delete-icon blue-tooltip" href="#"    onClick="deleteId('{!formObj.SFForm.id}')"><span class="blue-tooltip-text -ml20">Delete</span></a>
                                                     </apex:outputText>
                                                     <apex:outputText rendered="{!if(formObj.IsValid,false,true)}">
                                                         <a class="action-icon edit-icon blue-tooltip"   onclick="trackEditTemplate('{!formObj.SFForm.id}');commonAlertMessage('{!HTMLENCODE(formObj.OtherText)}','');return false;"      ><span class="blue-tooltip-text -ml18">Edit</span></a>
-                                                        <a class="action-icon duplicate-icon blue-tooltip"    onClick="commonAlertMessage('{!HTMLENCODE(formObj.OtherText)}','');return false;"     ><span class="blue-tooltip-text -ml30">Duplicate</span></a>
+                                                        <a class="{!if(formApprovedBy !='' || isFormMigration == false,'action-icon','')} duplicate-icon blue-tooltip"    onClick="commonAlertMessage('{!HTMLENCODE(formObj.OtherText)}','');return false;"     ><span class="blue-tooltip-text -ml30">Duplicate</span></a>
                                                         <a class="action-icon preview-icon blue-tooltip"    onClick="commonAlertMessage('{!HTMLENCODE(formObj.OtherText)}','');return false;"   ><span class="blue-tooltip-text -ml25">Preview</span></a>
                                                         <a class="action-icon delete-icon blue-tooltip"      onClick="deleteId('{!formObj.SFForm.id}')"><span class="blue-tooltip-text -ml20">Delete</span></a>
                                                     </apex:outputText>
@@ -1806,20 +1973,29 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <apex:variable var="formObjUnpublished" value="{!formObj.SFForm.VisualAntidote__Draft_Status__c == 'Unpublished'}" />
+
                                         <div class="form-settings-wrapper">
-                                            <apex:outputPanel rendered="{! showFormMigration }">
-                                                <a class="btnmigrate vabutton2 {! if(formObjUnpublished,'migrate-disabled','')}" title="{!if(formObjUnpublished,'The form needs to be published before migration can be done.','')}" href="{! if(formObjUnpublished,'#',$Site.BaseUrl&'/apex/FormMigration?FormIdList='&formObj.SFForm.id) }" >
-                                                    Migrate
-                                                </a>
+                                            <apex:outputPanel styleClass="form-settings-wrapper-inner">
+                                                <apex:outputPanel rendered="{!if(showFormMigration &&  isFormMigration==false,true,false) }">
+                                                    <a class="btnmigrate vabutton2 {! if(formObjUnpublished,'migrate-disabled','')}" title="{!if(formObjUnpublished,'The form needs to be published before migration can be done.','')}" href="{! if(formObjUnpublished,'#',$Site.BaseUrl&'/apex/FormMigration?FormIdList='&formObj.SFForm.id) }" >
+                                                        Migrate
+                                                    </a>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel rendered="{!if(showFormMigration && isFormMigration ,true,false) }">
+                                                    <a class="vabutton2 btnmigrate" href="#"  onclick="expandMigrate(this);return false;">
+                                                        
+                                                        <span class='btn-text'>Migrate</span>
+                                                        <span class='btn-icon'></span>              
+                                                        </a>
+                                                    </apex:outputPanel>
+                                                <div data-formid="{!formObj.SFForm.id}" class="form-submission-wrapper">
+                                                    <a class="vabutton2" href="#"  onclick="expandSubmissions(this);return false;" data-elemid="{!formObj.SFForm.id}">
+                                                        <span class="btn-text"  >Submissions</span>
+                                                        <span class="btn-icon"></span>
+                                                    </a>
+                                                    <span class="notifications-tag">0</span>
+                                                </div>
                                             </apex:outputPanel>
-                                            <div data-formid="{!formObj.SFForm.id}" class="form-submission-wrapper">
-                                                <a class="vabutton2" href="#"  onclick="expandSubmissions(this);return false;" data-elemid="{!formObj.SFForm.id}">
-                                                    <span class="btn-text"  >Submissions</span>
-                                                    <span class="btn-icon"></span>
-                                                </a>
-                                                <span class="notifications-tag">0</span>
-                                            </div>
                                             <apex:outputPanel styleClass="form-settings-wrapper-inner">
                                                 <apex:outputText rendered="{!if(formObj.IsValid,true,false)}">
                                                     <apex:commandLink id="publishlink" html-data-elemid="{!formObj.SFForm.id}" styleClass="vabutton2-noactive" 
@@ -1837,6 +2013,7 @@
                                         </div>
                                         
                                     </div>
+
                                 </div>
                                 
                             </div>     
@@ -1844,6 +2021,28 @@
                             
                             <div style="clear:both">  
                             </div>
+
+                            <!-- Migration component -->
+                            <div class="form-migrate-wrapper-expanded" style="display: none">
+                                <div class="form-migrate-wrapper-inner" data-elemid="{!formObj.SFForm.id}" data-approvedBy="{!formApprovedBy}" data-url="{!$Site.BaseUrl&'/apex/FormMigration?FormIdList='&formObj.SFForm.id}" data-formObjUnpublished="{!formObjUnpublished}" data-isHosted="{!isHosted}">
+                                    <div class="fs-migrateDetails-box">
+                                        <div class = "fs-migrateDetails-record" >
+                                            <p class="migrationDetails-record-header" >{!if(formApprovedBy =='','Incoming Migration','Last Migration')}</p>                                        
+                                                <span>Date: {!formObj.migrationDetails.Date__c}</span>
+                                                <span>Migrated from: {!formObj.migrationDetails.SourceOrgName__c}</span>  
+                                                <div class="font-13px warning-message {!if(formApprovedBy =='','','hidden')}">
+                                                    <span class="icon-attention-triangle--orange"></span>
+                                                    <span>Publish this form to make sure your live form is updated. Your current live form has not been changed.</span>
+                                                </div>
+                                        </div>
+                                    </div>
+                                    <div class="fs-migrateDetails-buttons-box">
+
+                                    </div>
+                                </div>
+                            </div> 
+
+                            <!-- publish component -->
                             <apex:outPutPanel styleClass="publishComponentCSS" id="publishcomponent" layout="block" style="display:none;"   >
                                 <apex:outputPanel id="draftPublished" rendered="{!IF(formObj.SFForm.Id==currentOpenedId,true,false)}" layout="block" >
                                     
